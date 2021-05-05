@@ -1,0 +1,19 @@
+<!-- app/templates/home/index.html -->
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock %}
+{% block body %}
+<div class="content-section">
+    <div class="center">
+      <h1> {{title}} </h1>
+      <br>
+         {{ wtf.quick_form(form) }}
+         {% if file %}
+         <div class="form-group">
+            기존 첨부파일은 [ {{file}} ] 입나다
+         </div>        
+         {% endif %}
+       </div> 
+    </div>
+  </div>
+{% endblock %}

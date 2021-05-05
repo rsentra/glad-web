@@ -1,0 +1,151 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>
+<script type="text/javascript" src="static/js/chartjs-plugin-colorschemes.js"></script>
+<style type="text/css">   #fixed {position:sticky; top:60px; height:100px}  </style>
+
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+<title> {{title}}</title>
+{% block body %}
+    <br>
+    <div class="container">
+      <div class="row">
+        <form action="" method="post" class="form" role="form" onsumit="return false">
+        <br><br>
+
+        <div id="fixed" >
+      
+            <h4>{{title}}</h4>
+            {% if selects %}
+               &nbsp;&nbsp;&nbsp;&nbsp; 선택
+               {% for item in selects %}
+                 {% set checked="" %}
+                 {% if loop.index0==0 %}
+                    {% set checked="checked" %}
+                 {% endif %}
+               &nbsp;&nbsp;
+               <label class="checkbox-inline">
+                 <input type="checkbox" class="chk" name="checkboxs" id="checkboxs" value="{{item}}" {{checked}}> {{item}}
+               </label>
+               {% endfor %}
+               <br>
+               &nbsp;&nbsp;&nbsp;&nbsp; type
+               <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-default active">
+                  <input type="radio" name="options" id="option1" autocomplete="off" value="line" checked> Line
+                </label>
+                <label class="btn btn-default">
+                  <input type="radio" name="options" id="option1" autocomplete="off" value="bar"> Bar
+                </label>
+              </div>
+              <div style="text-align: center">
+                <input type="button"  class='btn btn-info' id='proc' value="Chart View" > 
+              </div>
+              <br><br>
+            {% endif %}
+           </div>
+        </form>
+
+        <div class="chartDiv">
+            <!-- bar chart canvas element -->
+            <canvas id="myChart" style="width:80vw; height:60vh"></canvas>
+            <p id="pointSelected">Point selected:</p>
+        </div>  
+        
+        <script>
+        // 처리버튼 클릭시 web server call
+        $('#proc').click(function() {
+          if (myChart != undefined || myChart !=null) {
+              myChart.destroy();
+          }
+            // 체크된 항목을 alert
+            // var chks=[];
+            // $('input[type="checkbox"].chk:checked').map(function() {
+            //     var chk = $(this).val();
+            //     chks.push({ 'checkboxs': chk });
+            //     alert(chk)
+            // })
+          var lbl=[];  
+          var dat;  
+          $.ajax({
+            type: "POST",
+            data: $('.chk:checked').serialize(),  //체크된 항목만 전달
+            url: "{{ url_for('sales.line_chart') }}",
+            success: function(responseDt){
+              full_data = JSON.parse(responseDt.resdata);
+              dat = full_data['data'];
+              lbl = full_data['labels'];
+              chks = full_data['checks'];
+             },
+             async: false
+          });
+          
+          var chart_type = $('input[name="options"]:checked').val();
+          // Global parameters:
+          // do not resize the chart canvas when its container does (keep at 600x400px)
+          Chart.defaults.global.responsive = false;
+        
+          // define the chart data
+          lineChartData = {}; //declare an object
+          lineChartData.labels = []; //add 'labels' element to object (X axis)
+          lineChartData.datasets = []; //add 'datasets' array element to object
+          cnt=dat.length;
+          for (line = 0; line < cnt; line++) {
+            y = [];
+            lineChartData.datasets.push({}); //create a new line dataset
+            dataset = lineChartData.datasets[line]
+           
+            dataset.fill = false;
+            dataset.label = chks[line];
+            //dataset.strokeColor = "rgba(200,200,200,1)";
+            dataset.data = []; //contains the 'Y; axis data
+
+            if (line==0)
+              lineChartData.labels = lbl[line] ;
+            dataset.data =dat[line]  
+          } //for line
+
+          // get chart canvas
+          var holder = document.getElementById("myChart");
+          var ctx = document.getElementById("myChart").getContext("2d");
+        
+          // create the chart using the chart canvas
+          var myChart = new Chart(ctx, {
+              type: chart_type,
+              data: lineChartData,
+              options: {
+                tooltips: {
+                  enabled: true,
+                  mode: 'single',
+                  callbacks: {
+                    label: function(tooltipItems, data) {
+                           return tooltipItems.yLabel + ' won';
+                    }
+                  }
+                },
+                plugins: {
+                  colorschemes: {
+                  scheme: 'brewer.PastelOne3'
+                  }
+                }
+              }
+          });
+        
+           // get the text element below the chart
+          var pointSelected = document.getElementById("pointSelected");
+        
+          // create a callback function for updating the selected index on the chart
+          holder.onclick = function(evt) {
+                var activePoint = myChart.getElementAtEvent(evt);
+                // console.log(activePoint);
+                // console.log('x:' + activePoint[0]._view.x);
+                // console.log('maxWidth: ' + activePoint[0]._xScale.maxWidth);
+                // console.log('y: ' + activePoint[0]._view.y);
+                // console.log('index: ' + activePoint[0]._index);
+                pointSelected.innerHTML = 'Point selected... index: ' + activePoint[0]._index;
+          };
+      });
+      </script>
+      
+    </div>
+    </div>
+{% endblock %}

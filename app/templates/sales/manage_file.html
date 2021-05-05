@@ -1,0 +1,64 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+<title> {{title}}</title>
+{% block body %}
+<div class="content-section">
+  <div class="center">
+    <form action="" method="post" class="form" role="form" enctype="multipart/form-data">
+       <div class="container">
+         <div class="hr-sect">파일처리</div>
+
+         <label for="Select1">FILE종류</label>
+         <select class="form-control" id="Select1">
+           <option>곰스</option>
+           <option>기타</option>
+        </select>
+               
+        <div class="form-group">
+           <label for="File">파일선택</label>
+           <input type="file" class="form-control-file" name="file" id="file" multiple>
+        </div>
+        
+        <br/>
+
+      </div>        
+      <input name="hiddenCnt" type="hidden" id="hiddenCnt" value={{gb}}>
+
+
+    {% if filelists %}
+    <div class="center  table-responsive">
+        <table class="table table-striped table-bordered" id="tb" name="tb">
+          <thead>
+            <tr>
+              <th width="10%"> 파일명 </th>
+              <th width="10%"> 날짜 </th>
+              <th width="10%"> action </th>
+            </tr>
+          </thead>
+          <tbody>
+             {% for filename,filedate in filelists.items() %}
+             <tr>
+              <td><input id="filenames" name="filenames" value="{{ filename }}" style="border:none" readonly>  </td>
+              <td> {{ filedate }} </td>
+              <td>   
+                <select class="form-control" id="procs" name="procs">
+                    <option>No Action</option>
+                    <option>Insert data</option>
+                    <option>Update data</option>
+                 </select>
+              </td>
+            {% endfor %}    
+          </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {{ utils.flashed_messages() }}
+    <div style="text-align: center">
+        <p><input type=submit class='btn btn-info' value="처리">
+      </div>
+
+   </form>
+   </div>
+</div>
+{% endblock %}

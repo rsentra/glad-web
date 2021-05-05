@@ -1,0 +1,46 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+<title> {{title}}</title>
+{% block body %}
+    <br>
+    <br>
+    <h3>{{ title }}</h3>
+
+    <canvas id="chart" style="width:40vw; height:40vh"></canvas>
+    <script>
+      var pieData = {
+        labels : [
+          {% for item in labels %}
+            "{{ item }}",
+          {% endfor %}
+        ],
+        datasets : [{
+          backgroundColor: [
+          {% for item in colors %}
+            "{{ item }}",
+          {% endfor %}
+        ],
+          data : [
+	    {% for item in values %}
+              {{ item }},
+            {% endfor %}]
+         }
+	    ]
+      }
+
+      var ctx = document.getElementById("chart").getContext("2d");
+      Chart.defaults.global.responsive = false;
+      steps = 10
+      max = {{ max }}
+
+      // draw pie chart
+      var pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: pieData
+            // options: chartOptions
+       });
+
+
+    </script>
+{% endblock %}

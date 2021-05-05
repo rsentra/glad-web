@@ -1,0 +1,280 @@
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+
+<title> {{title}}</title>
+{% block body %}
+    <br><br><br>
+    <form action="" method="post" class="form" role="form" onsumit="return false">
+     <div class="content">
+      <div style="text-align: right">
+        {{title}}&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="{{ url_for('sales.line_chart') }}" >추세 차트이동</a>
+      </div>
+      {% if selects %}
+        &nbsp;&nbsp;&nbsp;&nbsp; 선택
+        {% for item in selects %}
+           {% set checked="" %}
+           {% if loop.index0==0 %}
+              {% set checked="checked" %}
+           {% endif %}
+           &nbsp;&nbsp;
+           <label class="checkbox-inline">
+             <input type="checkbox" class="chk" name="checkboxs" id="checkboxs" value="{{item}}" {{checked}} > {{item}}
+           </label>
+        {% endfor %}
+     {% endif %}
+     <div style="text-align: center">
+      <input type="button"  class='btn btn-info' id='proc_bar' value="지점 Chart" > 
+      <input type="button"  class='btn btn-info' id='proc_pie' value="직영 Chart" > 
+    </div>
+  </div>
+  </form>
+  
+  <div class="container">
+   <div class="row">
+      <!-- bar chart canvas element -->
+      <div class="col-sm-6">
+      <!-- bar chart canvas element -->
+      <canvas id="myChartbar" style="width:50vw; height:50vh"></canvas>
+      <p id="pointSelected1">Point selected:</p>
+      </div>
+      <div class="col-sm-6">
+      <!-- pie chart canvas element -->
+        <canvas id="myChartpie" style="width:50vw; height:50vh"></canvas>
+        <p id="pointSelected2">Point selected:</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+  ym=''
+  //bar chart view
+  $('#proc_bar').click(function() {
+    var arr = [];
+    $('input.chk:checkbox:checked').each(function () {
+        arr.push($(this).val());
+    });
+    ym=arr[0]; //첫번째건
+    var lbl=[];  
+    var dat;
+    var chks;  
+    $.ajax({
+      type: "POST",
+      data: {chkYm:arr, Types: 'bar'} ,  
+      url: "{{ url_for('sales.bar_chart') }}",
+      success: function(responseDt){
+        full_data = JSON.parse(responseDt.resdata);
+        dat = full_data['data'];
+        lbl = full_data['labels'];
+        chks = full_data['checks'];
+      },
+      async: false
+    }); //end of ajax call
+
+    var type="myChartbar"
+    make_chart(dat,lbl,chks,type);
+  }); //end of proc_ct
+ 
+  //pie chart view
+  $('#proc_pie').click(function() {
+    var arr = [];
+    $('input.chk:checkbox:checked').each(function () {
+        arr.push($(this).val());
+    });
+    ym=arr[0]; //첫번째 ym
+    var lbl=[];  
+    var dat;
+    var chks;  
+    $.ajax({
+      type: "POST",
+      data: {chkYm:arr, Types: 'pie'} ,  
+      url: "{{ url_for('sales.bar_chart') }}",
+      success: function(responseDt){
+        full_data = JSON.parse(responseDt.resdata);
+        dat = full_data['data'];
+        lbl = full_data['labels'];
+        chks = full_data['checks'];
+      },
+      async: false
+    }); //end of ajax call
+
+    var ChartName="myChartpie"
+    make_chart(dat,lbl,chks,ChartName);
+  }); //end of proc_ct
+
+  function make_chart(dat,lbl,chks,ChartName) {
+      chart_type = ChartName.slice(-3)
+      // Global parameters:
+      // do not resize the chart canvas when its container does (keep at 600x400px)
+      Chart.defaults.global.responsive = false;
+      Chart.defaults.global.animationSteps = 50;
+      Chart.defaults.global.tooltipYPadding = 16;
+      Chart.defaults.global.tooltipCornerRadius = 0;
+      Chart.defaults.global.tooltipTitleFontStyle = "normal";
+      Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+      Chart.defaults.global.animationEasing = "easeOutBounce";
+      Chart.defaults.global.scaleLineColor = "black";
+      Chart.defaults.global.scaleFontSize = 16;
+
+      ChartData = {}; //declare an object
+      ChartData.labels = []; //add 'labels' element to object (X axis)
+      ChartData.datasets = []; //add 'datasets' array element to object
+      cnt=dat.length;
+      // alert(cnt);
+      for (line = 0; line < cnt; line++) {
+          if (line==0)
+             ChartData.labels = lbl[line] ;  // x축 라벨
+
+          ChartData.datasets.push({}); //create a new line dataset
+          dataset = ChartData.datasets[line]
+           
+          dataset.fill = false;
+          dataset.label= chks[line];  //데이터셋 안의 라벨
+          dataset.data = []; //contains the 'Y; axis data
+          dataset.data = dat[line];
+          // alert(dataset.data);
+      } //for line
+
+      if (chart_type=="bar") {
+        var options = { 
+            scales: {
+             xAxes: [{ stacked: true }],
+             yAxes: [{ stacked: true ,
+                   ticks: {
+                      callback: function (value, index, values) {
+                       return value.toLocaleString({style:"currency", currency:"won"});
+                      }
+                    }
+                  }]
+            },
+            scaleOverride: false,
+          // scaleSteps: steps,
+          // scaleStepWidth: Math.ceil(max / steps),
+          scaleStartValue: 0,
+          // scaleShowVerticalLines: true,
+          // scaleShowGridLines : true,
+          barShowStroke : false,
+          scaleShowLabels: false,
+          bezierCurve: false,    
+          title: {
+            display: true,
+            text: '지점별 실적'+' ['+ ym + ']'
+          },        
+          tooltips: {
+            enabled: true,
+            mode: 'label',
+            callbacks: {
+              label: function(tooltipItems, data) {
+                       var label = data.datasets[tooltipItems.datasetIndex].label
+                       return label + tooltipItems.yLabel.toLocaleString() + ' 천원';
+              }
+            }
+          },
+          plugins: {
+            datalabels: {
+              display: false,
+            },
+              colorschemes: {
+              scheme: 'brewer.PastelOne9'
+            }
+          }
+        };
+      } //end of bar option
+     
+      if (chart_type=="pie") {
+        var options= {
+          //  pieceLabel: { 
+          //   //  mode:"label", 
+          //   //  render: 'value',
+          //    position:"outside", 
+          //    fontSize: 20, 
+          //    fontColor: 'rgba(200,200,200,1)',
+          //    fontStyle: 'bold'
+          //  },
+           title: {
+            display: true,
+            text: '직영실적 구성비'+' ['+ ym + ']'
+           },
+           tooltips: {
+            mode: 'label',
+            callbacks: {
+                label: function(tooltipItem, data) {
+                    var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].toLocaleString();
+                    var label = data.labels[tooltipItem.index];
+                    return label + ': ' + value;
+                }
+            }
+           },
+           plugins: {
+             colorschemes: {
+               scheme: 'brewer.Paired12'
+             },
+             //각 pie의 %산출
+             datalabels: {
+              formatter: (value, ctx) => {
+                let datasets = ctx.chart.data.datasets;
+                if (datasets.indexOf(ctx.dataset) === datasets.length - 1) {
+                  let sum = datasets[0].data.reduce((a, b) => a + b, 0);
+                  let percentage = Math.round((value / sum) * 100) + '%';
+                  return percentage;
+                } else {
+                  return percentage;
+                }
+             },
+             color: '#fff',
+            }
+          }
+        }
+      } //end of pie option
+
+      // define the chart data
+      // bar chart data
+
+     // get chart canvas
+      var holder = document.getElementById(ChartName);
+      var ctx = document.getElementById(ChartName).getContext("2d");
+      steps = 10
+      // max = {{ max }}
+      max=17000
+      // create the chart using the chart canvas
+      var myChart = new Chart(ctx, {
+        type: chart_type,
+        data: ChartData,
+        options: options
+      });
+
+      // get the text element below the chart
+      if (chart_type=="bar") {
+          var pointSelected = document.getElementById("pointSelected1");
+      }
+      if (chart_type=="pie") {
+          var pointSelected = document.getElementById("pointSelected2");
+      }
+
+      // create a callback function for updating the selected index on the chart
+      holder.onclick = function(evt){
+        var activePoint = myChart.getElementAtEvent(evt);
+        console.log(activePoint);
+        console.log('x:' + activePoint[0]._view.x);
+        console.log('maxWidth: ' + activePoint[0]._xScale.maxWidth);
+        console.log('y: ' + activePoint[0]._view.y);
+        console.log('index: ' + activePoint[0]._index);
+        pointSelected.innerHTML = 'Point selected... index: ' + activePoint[0]._index;
+      };
+      function dynamicColors() {
+        var r = Math.floor(Math.random() * 255);
+        var g = Math.floor(Math.random() * 255);
+        var b = Math.floor(Math.random() * 255);
+        return "rgba(" + r + "," + g + "," + b + ", 0.5)";
+      };
+      function poolColors(a) {
+        var pool = [];
+        for(i = 0; i < a; i++) {
+            pool.push(dynamicColors());
+        }
+        return pool;
+      };
+    } //end of make_chart
+</script>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+<!-- app/templates/base.html -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    <title>{{ title }} | Glad Insurance Dream Team</title>
+
+    <!--jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!--js-->    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"> </script>
+    <!--최신css-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+     <!--부가 테마-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap_theme.min.css" rel="stylesheet"> 
+  
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link href="{{ url_for('static', filename='css/style5.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-inverse bg-dark navbar-fixed-top topnav" role="navigation">
+      <div class="container topnav">
+        <!-- 상단메뉴의 이름 -->
+        <a class="navbar-brand topnav" href="{{ url_for('home.homepage') }}">Glad Insurance Dream Team</a>
+        
+        <!-- 상단 메뉴가 좁아지면서 햄버거 버튼됨 -->
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed"
+                  data-toggle="collapse" data-target="#target">
+            <span class="sr-only">Toggle Navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>      
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <!--펼쳐진 상단 메뉴 -->
+      
+        <div class="collapse navbar-collapse" id="target">
+          <ul class="nav navbar-nav">
+           {% if current_user.is_authenticated %}
+             {% if current_user.is_admin %}
+            <!-- 상단메뉴의 드롭다운메뉴 -->
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <span>Admin</span>
+                  <span class="caret"></span>
+                  </a>    
+                 <ul class="dropdown-menu">
+                  <li><a href="{{ url_for('home.admin_dashboard') }}">Dashboard</a></li>
+                  <li><a href="{{ url_for('blog.create') }}">Blog Register </a></li>
+                  <li class="divider"></li>
+                  <li><a href="{{ url_for('admin.list_departments') }}">Departments</a></li>
+                  <li><a href="{{ url_for('admin.list_roles') }}">Roles</a></li>
+                  <li><a href="{{ url_for('admin.list_employees') }}">Employees</a></li>
+                </ul>
+              </li>
+             <!-- 상단메뉴의 드롭다운메뉴의 끝 -->
+              {% else %}      <!-- 일반로그인 -->
+                <li><a href="{{ url_for('home.dashboard') }}">Dashboard</a></li>
+              {% endif %}
+              <!-- 로그인 -->
+              <li><a href="{{ url_for('blog.blogs') }}">Blogs</a></li>                  
+              <li><a href="{{ url_for('cars.register') }}">자동차견적의뢰</a></li>
+              <li><a href="{{ url_for('cars.carslist') }}">견적목록</a></li>
+              
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                <li><a><i class="fa fa-user"></i>  user-{{ current_user.username }}!</a></li>    
+               </ul> 
+            <!-- 미 로그인 -->              
+            {% else %}
+                  <li><a href="{{ url_for('home.homepage') }}">Home</a></li>
+                  <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+                  <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+            {% endif %}
+            </ul>
+           </div>
+        <!--펼쳐진 상단 메뉴끝 -->
+        </div>
+    </nav>
+    
+    
+    <div class="wrapper">
+      {% block body %}
+      {% endblock %}
+      <div class="push"></div>
+    </div>
+    <br>
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="list-inline">
+                        <li><a href="{{ url_for('home.homepage') }}">Home</a></li>
+                        <li class="footer-menu-divider">⋅</li>
+                        {% if current_user.is_authenticated %}
+                          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        {% else %}
+                          <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+                          <li class="footer-menu-divider">⋅</li>
+                          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                        {% endif %}
+                    </ul>
+                    <p class="copyright text-muted small">Copyright © 2020. All Rights Reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

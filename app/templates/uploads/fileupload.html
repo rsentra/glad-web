@@ -1,0 +1,17 @@
+"""
+Created on Thu Apr  2 22:21:15 2020
+
+@author: user
+"""
+
+<!-- app/templates/uploads/fileupload.html -->
+
+{% import "bootstrap/utils.html" as utils %}
+{% extends 'base.html' %}
+
+{% block body %}
+  <form method="post" enctype="multipart/form-data">
+    <input name="file" type="file"/>
+    <input type="submit"/>
+  </form>
+{% endblock %}

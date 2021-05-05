@@ -1,0 +1,149 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %}
+    {% if add_cars %}
+        Add cars
+    {% else %}
+        Edit cars
+    {% endif %}
+{% endblock %}
+{% block body %}
+<div class="content-section">
+  <div class="center">
+       {% if add_cars %}
+          <h3>견적 신청</h3>
+       {% else %}
+          <h3>견적 수정</h3>
+       {% endif %}
+    <br/>
+    <form action="" method="post" class="form" role="form" enctype="multipart/form-data">
+      {{ form.csrf_token() }}
+     <d1>
+      <div class="form-inline">
+        <div class="form-group col-md-6" float:left>        
+             {{ wtf.form_field(form.company, class='form-control', placeholder='Write down your comapny...',size=20) }}
+        </div>
+        <div class="form-group col-md-6" float:left>        
+             {{ wtf.form_field(form.company, class='form-control', placeholder='..') }}
+        </div>
+      </div>
+<!--계약자-->
+      <div class="form-inline">
+        <div class="form-group col-md-6">        
+             {{ wtf.form_field(form.customer_name, class='form-control', placeholder='필수') }}
+        </div>
+        <div class="form-group col-md-6">        
+             {{ wtf.form_field(form.customer_id, class='form-control', placeholder='필수') }}
+        </div>
+      </div>
+      <div class="form-inline">
+        <div class="form-group">        
+             {{ wtf.form_field(form.customer_telno, class='form-control', placeholder='tel')}}
+        </div>
+        <div class="form-group">        
+          {{ wtf.form_field(form.customer_job, class='form-control', placeholder='직업명')}}
+        </div>
+      </div>
+      <div class="form-inline">        
+        <div class="form-group">        
+          {{ wtf.form_field(form.customer_address, class='form-control',placeholder='도로명 주소',size=100) }}
+        </div>
+      </div>
+<!--차량소유주-->
+      <div class="form-inline">
+        <div class="form-group col-md-6">        
+            {{ wtf.form_field(form.owner_name, class='form-control', placeholder='필수') }}
+        </div>
+        <div class="form-group col-md-6">        
+            {{ wtf.form_field(form.owner_id, class='form-control', placeholder='필수') }}
+        </div>
+      </div>
+      <div class="form-inline">
+        <div class="form-group">        
+            {{ wtf.form_field(form.owner_telno, class='form-control', placeholder='')}}
+        </div>
+        <div class="form-group">        
+          {{ wtf.form_field(form.owner_job, class='form-control', placeholder='')}}
+        </div>
+      </div>
+      <div class="form-inline">
+        <div class="form-group">          
+          {{ wtf.form_field(form.owner_address, class='form-control', placeholder='도로명 주소',size=100) }}
+        </div>
+      </div>
+<!--차량-->
+      <div class="form-inline">    
+        <div class="form-group col-md-6">       
+         {{ wtf.form_field(form.car_no, class='form-control', placeholder='차량/차대') }}
+        </div>
+        <div class="form-group col-md-6"> 
+          {{ wtf.form_field(form.car_name, class='form-control', placeholder='차량명칭') }}
+        </div>
+      </div>
+      <div class="form-inline">    
+        <div class="form-group">       
+         {{ wtf.form_field(form.car_code, class='form-control', placeholder='') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.car_year, class='form-control', placeholder='년도4자리') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.car_acc, class='form-control', placeholder='부속품') }}
+        </div>
+      </div>
+<!--운전자-->
+      <div class="form-inline">    
+        <div class="form-group">       
+        {{ wtf.form_field(form.age_limit, class='form-control', placeholder='') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.driver_limit, class='form-control', placeholder='') }}
+        </div>
+      </div>
+<!--담보-->
+      <div class="form-inline">    
+        <div class="form-group">       
+        {{ wtf.form_field(form.cov_mandatory, class='form-control') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.cov_person, class='form-control') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.cov_object, class='form-control') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.cov_self, class='form-control') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.cov_car, class='form-control') }}
+        </div>
+        <div class="form-group"> 
+          {{ wtf.form_field(form.cov_noncover, class='form-control') }}
+        </div>
+      </div>
+      <div class="form-inline">    
+        <div class="form-group">       
+           {{ wtf.form_field(form.spc_emergency, class='form-control') }}
+        </div>
+        <div class="form-group">       
+          {{ wtf.form_field(form.spc_blackbox, class='form-control') }}
+       </div>
+       <div class="form-group">       
+        {{ wtf.form_field(form.spc_mileage, class='form-control') }}
+       </div>
+      </div> 
+      
+      <div class="form-inline">
+        <div class="form-group">        
+          {{ wtf.form_field(form.description, class='form-control',placeholder='기타 요청사항',size=100)}}      
+        </div>
+      </div>
+      <input name="file" type="file",placeholder='here'>
+        {{filename}}
+    </d1>
+    <br/>
+      <p><input type=submit class='btn btn-info' value="완료">
+    </form>
+  </div>
+</div>
+{% endblock %}

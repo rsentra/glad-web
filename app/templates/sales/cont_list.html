@@ -1,0 +1,252 @@
+<!-- app/templates/sales/cont_list.html -->
+<script src="/static/js/sorttable.js"></script>
+
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+{% block title %}contsList{% endblock %}
+{% block body %}
+<div class="content-section">
+  <form action="" method="post" class="form" role="form">
+  <div class="outer">
+    <div class="top">
+      <div class="inner">
+        <br/>
+        {{ utils.flashed_messages() }}
+        <div class="form-group row">
+          <div class="col-sm-offset-1 col-sm-3">
+            <a>구분</a>
+            <select name="picker_gb">
+              <option value="전체" {% if gb =="전체" %} selected="seleted" {% endif %}>전체</option>
+              <option value="직영" {% if gb =="직영" %} selected="seleted" {% endif %}>직영</option>
+              <option value="자율" {% if gb =="자율" %} selected="seleted" {% endif %}>자율</option>
+            </select>
+            <a>보종</a>
+            <select name="picker_bo">
+              <option value="전체" {% if bo =="전체" %} selected="seleted" {% endif %}>전체</option>
+              <option value="장기" {% if bo =="장기" %} selected="seleted" {% endif %}>장기</option>
+              <option value="생보" {% if bo =="생보" %} selected="seleted" {% endif %}>생보</option>
+              <option value="일반" {% if bo =="일반" %} selected="seleted" {% endif %}>일반</option>
+              <option value="자동차" {% if bo =="자동차" %} selected="seleted" {% endif %}>자동차</option>
+            </select>
+            <a>지점</a>
+            <select name="picker_brh">
+              {% for row in brhs %}
+                <option value={{row}} {% if row == brh %} selected="seleted" {% endif %}>{{row}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-3">          
+            <a> 계약일(From~To)</a>
+            {% if datefrom %}
+            <input type="text" name="datefrom" placeholder="yyyy-mm-dd" maxlength="10" size="10" width="10" style=”display:inline-block“ value={{datefrom}}> 
+            {% else %}
+            <input type="text" name="datefrom" placeholder="yyyy-mm-dd" maxlength="10" size="10" width="10" style=”display:inline-block“> 
+            {% endif %}
+            {% if dateto %}
+            <input type="text" name="dateto" placeholder="yyyy-mm-dd" maxlength="10" size="10" width="10" style=”display:inline-block“ value={{dateto}}> 
+            {% else %}
+            <input type="text" name="dateto" placeholder="yyyy-mm-dd" maxlength="10" size="10" width="10" style=”display:inline-block“> 
+            {% endif %}
+          </div>
+          <div class="col-sm-2">          
+            <a> 계약자</a>
+            {% if contr %}
+            <input type="text" name="contr" maxlength="20" size="20" width="20" style=”display:inline-block“ value={{contr}}> 
+            {% else %}
+            <input type="text" name="contr" maxlength="20" size="20" width="20" style=”display:inline-block“> 
+            {% endif %}
+          </div>
+          <div class="col-sm-2">          
+            <a> 증번</a>
+            {% if polno %}
+            <input type="text" name="polno" maxlength="20" size="20" width="20" style=”display:inline-block“ value={{polno}}> 
+            {% else %}
+            <input type="text" name="polno" maxlength="20" size="20" width="20" style=”display:inline-block“> 
+            {% endif %}
+          </div>
+          <div class="col-sm-1">          
+            <div style="text-align: left">
+              <p><input type=submit class='btn btn-info' id='qry' value="조회">
+            </div>
+          </div>
+        </div>
+        {% if contracts.items %}
+          <hr class="intro-divider">
+          <div class="center  table-responsive">
+            <table class="table table-striped table-bordered sortable" height=10ptx id="tb" name="tb">
+              <thead>
+                <tr>
+                  <th width="5%"> 지점 </th>
+                  <th width="5%"> 담당자 </th>
+                  <th width="8%"> 계약자 </th>
+                  <th width="5%"> 증권번호 </th>
+                  <th width="5%"> 계약일자 </th>
+                  <th width="5%"> 보험사 </th>
+                  <th width="5%"> 보종 </th>
+                  <th width="5%"> 상품 </th>
+                  <th width="10%"> 상품명 </th>
+                  <th width="5%"> 초회 </th>
+                  <th width="5%"> 상태 </th>
+                  <th width="5%"> 납입회차 </th>
+                </tr>
+              </thead>
+              <tbody>
+              {% set counter  = 0 %}
+              {% for cont in contracts.items %}
+                 {% set ss= cont.상품명 %}
+                <tr>
+                  <td> {{ cont.지점 }} </td>
+                  <td> {{ cont.수금사원명}} </td>
+                  <td> {{ cont.계약자 }}   </td>
+                  <td> {{ cont.증권번호 }} </td>
+                  <td> {{ cont.계약일자 }} </td>
+                  <td> {{ cont.보험사 }} </td>
+                  <td> {{ cont.계약종류 }} </td>                  
+                  <td> {{ cont.상품종류 }} </td>   
+                  {% if ss == None %}            
+                    <td> </td>
+                  {% else %}
+                    <td title="{{ cont.상품명 }}">{{ ss|truncate(10) }}</td>                                    
+                  {% endif %}
+                  <td style="text-align: right;"> {{ "{:,.0f}".format(cont.초회보험료) }}  </td>
+                  <td> {{ cont.계약상태 }} </td>
+                  <td style="text-align: center;">
+                    <!-- 모달을 열기 위한 버튼 -->	
+                    <a data-toggle="modal" href="#modalBox" data-최종수금일={{cont.최종수금일}}  data-납입방법={{cont.납입방법}} data-피보험자='{{cont.피보험자}}' data-수금사원번호={{cont.수금사원번호}} > {{cont.납입회차}}</a>
+                  </td>
+
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <div style="text-align: center">
+             <h5>
+            {% for  page in contracts.iter_pages(left_edge=3,right_edge=3,left_current=3,right_current=3) %}
+              {% if page %}
+                {% if act=='get' %}
+                 <a href="{{ url_for('sales.cont_list',gb=gb,key=key,page=page,act='get') }}">{{page}}</a>
+                {% else %} 
+                <a href="{{ url_for('sales.cont_list',page=page,gb=gb,bo=bo,datefrom=datefrom,dateto=dateto,contr=contr,polno=polno,brh=brh,act='post') }}">{{page}}</a>
+                {% endif %}  
+              {% else %}
+                 ...
+              {% endif %}
+            {% endfor %}
+             </h5>
+            </div>
+          </div>
+          <div style="text-align: center">
+        {% else %}
+          <div style="text-align: center">
+            <h3> select condition, press query button. </h3>
+            <hr class="intro-divider">
+        {% endif %}
+          <input name="hiddenCounter" type="hidden" id="hiddenCounter">
+          <input name="hiddenId" type="hidden" id="hiddenId">
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+</div>
+
+<!-- 모달 영역 -->	
+<div id="modalBox" class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">	
+  <div class="modal-dialog  modal-lg" role="document">	
+    <div class="modal-content">	
+      <div class="modal-header">	
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>	
+        <h5 class="modal-title" id="myModalLabel">기타항목</h5>	
+      </div>	
+      <div class="modal-body">
+        <div class="row">	     
+          <div class="col-sm-2">
+            <h4><span class="label label-default">사원번호 </span></h4>
+          </div>  
+          <div class="col-sm-10">
+            <input class="form-control" name="rst_no" id="rst_no" type="text" >
+          </div>
+        </div>  
+        <div class="row">	               
+          <div class="col-sm-2">
+            <h4><span class="label label-default">피보험자 </span></h4>
+          </div>  
+          <div class="col-sm-10">
+            <input class="form-control" name="rst_pi" id="rst_pi"  type="text">
+          </div>
+        </div>
+        <div class="row">	               
+          <div class="col-sm-2">
+            <h4><span class="label label-default">납입방법 </span></h4>
+          </div>  
+          <div class="col-sm-10">
+            <input class="form-control" name="rst_mth" id="rst_mth"  type="text" >
+          </div>
+        </div>
+        <div class="row">	               
+            <div class="col-sm-2">
+              <h4><span class="label label-default">최종수금일 </span></h4>
+            </div>  
+            <div class="col-sm-10">
+              <input class="form-control" name="rst_lst" id="rst_lst"  type="text" >
+            </div>
+        </div>
+        <br>
+        <div class="row">	               
+            <div class="col-sm-offset-4 col-sm-2">            
+                <button type="button" class="btn btn-default" id="closeModalBtn">취소</button>	
+            </div>
+        </div>
+      </div>
+    </div>	
+  </div>	
+</div>	
+
+<script type=text/javascript>	
+  //모달 열릴때
+  $('#modalBox').on('show.bs.modal', function (e) {	 
+     var button= $(e.relatedTarget); //이벤트가 발생한 대상 노드
+     var no = button.data('수금사원번호'); 
+     var pi = button.data('피보험자'); 
+     var mth = button.data('납입방법'); 
+     var lst = button.data('최종수금일'); 
+     if (no!='None') {
+         $(this).find('#rst_no').val(no);
+     } else { 
+         $(this).find('#rst_no').val('');
+     }
+     if (lst!='None') {
+         $(this).find('#rst_lst').val(lst);
+     } else {
+         $(this).find('#rst_lst').val('');         
+     }
+     if (mth!='None') {
+         $(this).find('#rst_mth').val(mth);
+     } else {
+         $(this).find('#rst_mth').val('');         
+     }
+     if (pi!='None') {
+         $(this).find('#rst_pi').val(pi);
+     } else {
+         $(this).find('#rst_pi').val('');         
+     }
+  });	
+   // 모달 안의 취소 버튼에 이벤트를 건다.	
+   $('#closeModalBtn').on('click', function(){	
+    $('#modalBox').modal('hide');	
+	// console.log("click close");	
+  });	
+  //모달 열린후
+  $('#modalBox').on('shown.bs.modal', function (e) {	
+    // console.log("shown.bs.modal");	
+  });	
+  //모달 닫힐때
+  $('#modalBox').on('hide.bs.modal', function (e) {	
+    // console.log("hide.bs.modal");	
+  });	
+  //모달 닫힌후
+  $('#modalBox').on('hidden.bs.modal', function (e) {	
+    // console.log("hidden.bs.modal");	
+  });	
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %}
+    {% if add_cars %}
+        Add cars
+    {% else %}
+        Edit cars
+    {% endif %}
+{% endblock %}
+{% block body %}
+<div class="content-section">
+  <div class="center">
+       {% if add_cars %}
+          <h3>견적 신청</h3>
+       {% else %}
+          <h3>견적 수정</h3>
+       {% endif %}
+    <br/>
+    <form action="" method="post" class="form" role="form" enctype="multipart/form-data">
+      {{ form.csrf_token() }}
+     <d1>
+      <div class="form-row">
+        <div class="form-group col-md-6">        
+             {{ wtf.form_field(form.customer_name, class='form-control', placeholder='Write down your name here...') }}
+        </div>
+        <div class="form-group col-md-6">        
+             {{ wtf.form_field(form.customer_id, class='form-control', placeholder='your id') }}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">        
+             {{ wtf.form_field(form.customer_telno, class='form-control', placeholder='your tel')}}
+        </div>
+      </div>
+
+      <div class="form-row">    
+        <div class="form-group col-md-6">       
+         {{ wtf.form_field(form.car_no, class='form-control', placeholder='carno') }}
+        </div>
+        <div class="form-group col-md-6"> 
+          {{ wtf.form_field(form.car_name, class='form-control', placeholder='carname') }}
+        </div>
+      </div>
+
+      <div class="form-group">        
+        {{ wtf.form_field(form.customer_address, class='form-control', form_type="horizontal", horizontal_columns=('lg', 10, 100),placeholder='your address') }}
+        {{ wtf.form_field(form.description, class='form-control',form_type="horizontal", horizontal_columns=('lg', 10, 100)) }}      
+      </div>
+        <input name="file" type="file",placeholder='here'>
+        {{filename}}
+    </d1>
+    <br/>
+      <p><input type=submit class='btn btn-info' value="완료">
+    </form>
+  </div>
+</div>
+{% endblock %}

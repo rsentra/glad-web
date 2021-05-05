@@ -1,0 +1,69 @@
+<!-- app/templates/home/index.html -->
+{% import "bootstrap/utils.html" as utils %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %}Blog{% endblock %}
+{% block body %}
+<div class="content-section">
+  <h4> --- Glad Blogs ---</h4>
+    <div class="outer">
+       <div class="center">     
+        {{ utils.flashed_messages() }}     
+        {% for post in posts.items %}
+          <article class="post">
+           <div class="panel panel-default">  
+            <div class="panel-heading">
+              <div>
+                <div style="float:left">{{ post['title'] }}</div>
+                <div class="about" style="float:right">by {{ post['username'] }} / {{ post['created'].strftime('%Y-%m-%d') }}</div>
+              </div>
+            {% if current_user.id == post['author_id'] %}
+              <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+              <a class="action" href="{{ url_for('blog.delete', id=post['id']) }}">Del</a>
+            {% else %}
+              <br>
+            {% endif %}
+            </div>
+            <div class="panel-body">
+              <a class="action" href="{{ url_for('blog.detail',id=post['id']) }}"> 
+                {% set counter  = 0 %}
+                {% for para in post['body'].split('\n')  %}
+                   {% if (counter+loop.index0 < 2) %} 
+                      {{para}} <br>
+                   {% else %}
+                      {% if ((counter+loop.index0 == 2)) %}
+                        &nbsp; more . . . . . .
+                      {% else %} 
+                      {% endif %}
+                   {% endif %}
+                {% endfor %}
+              </a>
+            </div>
+          </div>
+         </article>
+         {% if not loop.last %}
+         {% endif %}
+       {% endfor %}
+
+       <!-- {% if prev_url %}
+       <a href="{{ prev_url }}">{{prev_num}}</a>
+       {% endif %}
+       {% if next_url %}
+       <a href="{{ next_url }}">{{next_num}}</a>
+       {% endif %} -->
+       <div style="text-align: center">
+        <h5>
+       {% for  page in posts.iter_pages(left_edge=3,right_edge=3,left_current=3,right_current=3) %}
+         {% if page %}
+            <a href="{{ url_for('blog.blogs',page=page) }}">{{page}}</a>
+         {% else %}
+            ...
+         {% endif %}
+       {% endfor %}
+        </h5>
+       </div>
+
+      </div>
+  </div>
+</div>
+{% endblock %}

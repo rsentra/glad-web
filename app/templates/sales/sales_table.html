@@ -1,0 +1,116 @@
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+
+<title> {{title}}</title>
+{% block body %}
+    <br>
+    <div class="content-section">
+      <div class="outer">
+        <form action="" method="post" class="form" role="form" onsumit="return false">
+        <div id="fluid" >
+          <div style="text-align: right">
+            {{title}}&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{{ url_for('sales.line_chart') }}" target='_blank' >추세차트</a>
+            <a href="{{ url_for('sales.bar_chart') }}"  target='_blank' >지점별차트</a>
+          </div>
+          {% if selects %}
+             &nbsp;&nbsp;&nbsp;&nbsp; 선택
+          {% for item in selects %}
+             {% set checked="" %}
+             {% if loop.index0==0 %}
+                 {% set checked="checked" %}
+             {% endif %}
+             &nbsp;&nbsp;
+             <label class="checkbox-inline">
+                 <input type="checkbox" class="chk" name="checkboxs" id="checkboxs" value="{{item}}" {{checked}}> {{item}}
+             </label>
+           {% endfor %}
+            <div style="text-align: center">
+                <input type="button"  class='btn btn-info' id='proc_tb' value="Table View" > 
+                <a href="#" onclick="history.back()">뒤로가기</a> 
+              </div>
+            <br><br>
+            {% endif %}
+          </div>
+        </form>
+
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-6">
+              <div id="title1" style="height:auto; text-align: left"> </div>
+            </div>
+            <div class="col-sm-6">
+                <div id="title2" style="height:auto; text-align: center"> </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div id="results1" style="height:auto">{{ data|safe }} </div>
+            </div>
+            <div class="col-sm-6">
+                <div id="results2" style="height:auto">{{ data|safe }} </div>
+            </div>
+          </div>
+        </div>
+        <script>
+        // table view 클릭시 web server call
+        $('#proc_tb').click(function() {
+          // 체크된 항목을 alert
+          var arr = [];
+          $('input.chk:checkbox:checked').each(function () {
+              arr.push($(this).val());
+          });
+
+          var vTtype='no'
+          if ($("input:checkbox[id='split']").is(":checked") == true) {
+              vTtype='yes'
+          }
+          var lbl=[];  
+          var dat;  
+          $("#title1").html(arr[0]+'보험사별 실적');
+          $("#title1").css({'color':"DarkBlue", 'font-size':18}); 
+          $.ajax({
+            type: "POST",
+            //체크된 항목만 전달
+            // data:  $('.chk:checked').serialize(),   
+            data: {chkYm:arr, Types: vTtype} , 
+            url: "{{ url_for('sales.sales_table') }}",
+            success: function(responseDt){
+              $("#results1").html(responseDt);
+             },
+             async: false
+          });
+
+          //전월대비 데이터 호출
+          var i=0;
+          if (arr.length==1) {  //하나만 선택한 경우 바로 다음건을 넘겨줌--전월비교용으로
+            $('input.chk:checkbox').each(function () {
+              if (i==1) { 
+                 arr.push($(this).val());
+                 i=2;
+              }
+              if ($(this).val() == arr[0]) {
+                  i = 1
+              }
+            });
+          }
+          $("#title2").html(arr[0]+'실적 상위/상승/하락['+arr[1]+'比]');
+          $("#title2").css({'color':"DarkGreen", 'font-size':18}); 
+          vTtype='rank'
+          $.ajax({
+            type: "POST",
+            data: {chkYm:arr, Types: vTtype} , 
+            url: "{{ url_for('sales.sales_table') }}",
+            success: function(responseDt){
+              $("#results2").html(responseDt);
+             },
+             async: false
+          });
+
+        });
+        
+      </script>
+      
+    </div>
+    </div>
+{% endblock %}

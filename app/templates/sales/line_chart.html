@@ -1,0 +1,232 @@
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+
+<title> {{title}}</title>
+{% block body %}
+    <br>
+    <div class="content-section">
+      <div class="outer">
+        <form action="" method="post" class="form" role="form" onsumit="return false">
+        <div id="fluid" >
+          <div style="text-align: right">
+            {{title}}&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{{ url_for('sales.bar_chart') }}" >지점별차트</a>
+            <a href="{{ url_for('sales.sales_table') }}" >보험사별</a>
+          </div>
+          {% if selects %}
+             &nbsp;&nbsp;&nbsp;&nbsp; 선택
+          {% for item in selects %}
+             {% set checked="" %}
+             {% if loop.index0==0 %}
+                 {% set checked="checked" %}
+             {% endif %}
+             &nbsp;&nbsp;
+             <label class="checkbox-inline">
+                 <input type="checkbox" class="chk" name="checkboxs" id="checkboxs" value="{{item}}" {{checked}}> {{item}}
+             </label>
+           {% endfor %}
+             <br>
+            <div class="row">
+               &nbsp;&nbsp;&nbsp;&nbsp; type
+               <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-default active">
+                    <input type="radio" name="options" id="option1" autocomplete="off" value="line" checked> Line
+                  </label>
+                  <label class="btn btn-default">
+                    <input type="radio" name="options" id="option1" autocomplete="off" value="bar"> Bar
+                  </label>
+                </div>
+            </div>
+            <div style="text-align: center">
+                <input type="button"  class='btn btn-info' id='proc_ct' value="Chart View" > 
+                <input type="button"  class='btn btn-info' id='proc_tb' value="Table View" > 
+                <input type="checkbox" name="split" id="split" value='gb'>장기/생보구분
+              </div>
+            <br><br>
+            {% endif %}
+          </div>
+        </form>
+
+        <div class="container-fluid">
+          <div class="row">
+          <!-- bar chart canvas element -->
+            <div class="col-sm-6">
+              <canvas id="myChart" style="width:100%;"></canvas>
+              <p id="pointSelected">Point selected:</p>
+            </div>           
+            <div class="col-sm-6">
+              <div id="results" style="height:auto">{{ data|safe }} </div>
+            </div>
+          </div>
+        </div>
+        <script>
+      
+        // 차트view버튼 클릭시 web server call
+        $('#proc_ct').click(function() {
+     
+          // 체크된 항목을 alert
+          var arr = [];
+          $('input.chk:checkbox:checked').each(function () {
+              arr.push($(this).val());
+          });
+          //alert(arr);
+          
+          //vTtype= $('input[name="split"]:checked').val();
+          var lbl=[];  
+          var dat;  
+          $.ajax({
+            type: "POST",
+            //체크된 항목만 전달
+            //data:  $('.chk:checked').serialize(), 
+            //data: JSON.stringify(req_data),  json으로 넘길때
+            //contentType: 'application/json',
+            data: {chkYm:arr, Types: 'names'} ,  
+            url: "{{ url_for('sales.line_chart') }}",
+            success: function(responseDt){
+              full_data = JSON.parse(responseDt.resdata);
+              dat = full_data['data'];
+              lbl = full_data['labels'];
+              chks = full_data['checks'];
+             },
+             async: false
+          });
+          
+          make_chart(dat,lbl,chks);
+    
+          //if (myChart != undefined || myChart !=null) {
+          //    alert('11');
+          //    myChart.destroy();
+          //}
+          vTtype= $('input[name="cRatio"]:checked').val();
+        });
+          
+        function make_chart(dat,lbl,chks) {
+          var chart_type = $('input[name="options"]:checked').val();
+          // Global parameters:
+          // do not resize the chart canvas when its container does (keep at 600x400px)
+          Chart.defaults.global.responsive = false;
+        
+          // define the chart data
+          lineChartData = {}; //declare an object
+          lineChartData.labels = []; //add 'labels' element to object (X axis)
+          lineChartData.datasets = []; //add 'datasets' array element to object
+          cnt=dat.length;
+          for (line = 0; line < cnt; line++) {
+            y = [];
+            lineChartData.datasets.push({}); //create a new line dataset
+            dataset = lineChartData.datasets[line]
+           
+            dataset.fill = false;
+            dataset.label = chks[line];  //데이터셋 안의 라벨
+            //dataset.strokeColor = "rgba(200,200,200,1)";
+            dataset.data = []; //contains the 'Y; axis data
+
+            if (line==0)
+               lineChartData.labels = lbl[line] ;  // x축 라벨
+             
+            if (line== cnt-1) {
+                 dataset.type = 'bar';
+                 dataset.label = chks[0]+'일별';
+            }
+                   
+            dataset.data =dat[line]  
+            // lineChartData.datasets.push({
+            //   labels: lbl[line],
+            //   data: dat[line]
+            // });
+          } //for line
+
+          // get chart canvas
+          var holder = document.getElementById("myChart");
+          var ctx = document.getElementById("myChart").getContext("2d");
+          
+          // create the chart using the chart canvas
+          window.myChart = new Chart(ctx, {
+              type: chart_type,
+              data: lineChartData,   //x축라벨,데이터셋들(label, values)
+              options: {
+                scales: {
+                  yAxes: [
+                    { ticks: {
+                       callback: function (value, index, values) {
+                       return value.toLocaleString({style:"currency", currency:"won"});
+                      }
+                    }
+                  }]
+                },
+                tooltips: {
+                  enabled: true,
+                  mode: 'single',
+                  callbacks: {
+                    label: function(tooltipItems, data) {
+                           return tooltipItems.yLabel.toLocaleString() + ' 천원';
+                    }
+                  }
+                },
+                plugins: {
+                  datalabels: {
+                    display: false,
+                  },
+                  colorschemes: {
+                  scheme: 'brewer.PastelOne3'
+                  }
+                }
+              }
+          });
+              
+          // get the text element below the chart
+          var pointSelected = document.getElementById("pointSelected");
+        
+          // create a callback function for updating the selected index on the chart
+          holder.onclick = function(evt) {
+                var activePoint = myChart.getElementAtEvent(evt);
+                // console.log(activePoint);
+                // console.log('x:' + activePoint[0]._view.x);
+                // console.log('maxWidth: ' + activePoint[0]._xScale.maxWidth);
+                // console.log('y: ' + activePoint[0]._view.y);
+                // console.log('index: ' + activePoint[0]._index);
+                var clickedDatasetIndex = activePoint[0]._datasetIndex;
+                var clickedElementindex = activePoint[0]._index;
+                var label = myChart.data.labels[clickedElementindex];
+                var dlabel =  myChart.data.datasets[clickedDatasetIndex].label + ' ';
+                var value = myChart.data.datasets[clickedDatasetIndex].data[clickedElementindex];     
+                pointSelected.innerHTML = 'selected: ' + dlabel + label + ' value: ' + value.toLocaleString();
+          };
+          
+          return myChart;
+        } //end of make_chart
+        
+
+        
+        // table view 클릭시 web server call
+        $('#proc_tb').click(function() {
+          // 체크된 항목을 alert
+          var arr = [];
+          $('input.chk:checkbox:checked').each(function () {
+              arr.push($(this).val());
+          });
+
+          var vTtype='no'
+          if ($("input:checkbox[id='split']").is(":checked") == true) {
+              vTtype='yes'
+          }
+          var lbl=[];  
+          var dat;  
+          $.ajax({
+            type: "POST",
+            //체크된 항목만 전달
+            // data:  $('.chk:checked').serialize(),   
+            data: {chkYm:arr, Types: vTtype} , 
+            url: "{{ url_for('sales.da_table') }}",
+            success: function(responseDt){
+              $("#results").html(responseDt);
+             },
+             async: false
+          });
+        });
+
+      </script>
+      
+    </div>
+    </div>
+{% endblock %}

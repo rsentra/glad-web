@@ -1,0 +1,95 @@
+<!-- app/templates/admin/employees/employees.html -->
+{% import "bootstrap/utils.html" as utils %}
+{% extends "base.html" %}
+{% block title %}Accounts{% endblock %}
+{% block body %}
+<div class="content-section">
+  <div class="outer">
+    <div class="middle">
+      <div class="inner">
+        <br/>
+        {{ utils.flashed_messages() }}
+        <br/>
+        <h1 style="text-align:center;">Employees</h1>
+        {% if employees %}
+          <hr class="intro-divider">
+          <div class="center">
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th width="20%"> Email </th>
+                  <th width="20%"> Name </th>
+                  <th width="20%"> glad ID </th>
+                  <th width="20%"> Tel NO </th>
+                  <th width="30%"> Role </th>
+                  <th width="10%"> Assign </th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for employee in employees %}
+                {% if employee.is_admin %}
+                    <tr style="background-color: #f18973; color: white;">
+                      <td> {{ employee.email }} </td>
+                      <td> {{ employee.username }} </td>
+                      <td> {{ employee.glad_id }} </td>
+                      <td>
+                        {% if employee.tel_no %}
+                          {{ employee.tel_no }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if employee.role %}
+                          {{ employee.role }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      {% if current_user.is_admin %}
+                      <td>
+                        <a href="{{ url_for('auth.edit_register', id=employee.id) }}">
+                          <i class="fa fa-user-plus"></i> 수정
+                        </a>
+                      </td>
+                      {% endif %}
+                    </tr>
+                {% else %}
+                    <tr>
+                      <td> {{ employee.email }} </td>
+                      <td> {{ employee.username }} </td>
+                      <td> {{ employee.glad_id }} </td>
+                      <td>
+                        {% if employee.tel_no %}
+                          {{ employee.tel_no }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if employee.role %}
+                          {{ employee.role }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      {% if current_user.is_admin %}
+                      <td>
+                        <a href="{{ url_for('auth.edit_register', id=employee.id) }}">
+                          <i class="fa fa-user-plus"></i> 수정
+                        </a>
+                      </td>
+                      {% endif %}
+                    </tr>
+                {% endif %}
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

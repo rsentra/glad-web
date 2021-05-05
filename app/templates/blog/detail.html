@@ -1,0 +1,27 @@
+<!-- app/templates/home/index.html -->
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock %}
+
+{% block body %}
+   <div class="content-section">
+    <div class="container">
+        <br>
+        <div class="input-group">
+            <span class="input-group-addon">Title</span>
+            <input class="form-control" type="text" id="title" style="background-color: #F5FFFA;" value="{{ post['title'] }}" readonly>
+        </div>
+        <br>
+        <div class="form-group">
+            <textarea class="form-control" rows={{post[row]}} id="body" style="background-color: #FFFFFF;" readonly> {{ post['body'] }}</textarea>
+        </div>        
+        
+        {% if post.filename %}
+        <div class="form-group">
+            <img class="img-rounded" src="{{url_for('blog.download_file', filename=post.filename)}}" width="100%" height="100%" alt="">
+        </div>        
+        {% endif %}
+    </div>
+    </div>
+   </div>
+{% endblock %}

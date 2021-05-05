@@ -1,0 +1,10 @@
+.ipynb_checkpoints/
+__pycache__/
+**/*.xlsx
+**/*.csv
+**/.ipynb_checkpoints/
+**/__pycache__/
+**/build
+**/dist
+**/img
+**/*.spec
